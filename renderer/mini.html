@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
+<title>Pawmodoro mini</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap">
+<style>
+:root{--bgc:23,19,31;--ink:#EEE8F7;--accent:#A98BEA;--accent-ink:#1A1426;--alpha:.55}
+:root.light{--bgc:255,255,255;--ink:#2E2640;--accent:#6C4AB6;--accent-ink:#FFFFFF}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;-webkit-user-select:none}
+body{font-family:"Fredoka",ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif}
+.pill{position:absolute;inset:0;display:flex;align-items:center;gap:6%;padding:3% 6% 3% 3%;box-sizing:border-box;
+  border-radius:999px;background:rgba(var(--bgc),var(--alpha));color:var(--ink);-webkit-app-region:drag;cursor:grab}
+img{height:100%;width:auto;flex:none;pointer-events:none}
+.time{flex:1;text-align:center;font-weight:500;font-size:44vh;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;
+  text-shadow:0 0 6px rgba(var(--bgc),.6)}
+.ctl{display:flex;gap:4px;align-items:center;-webkit-app-region:no-drag;opacity:0;transition:opacity .15s ease}
+.pill:hover .ctl{opacity:1}
+button{border:0;border-radius:50%;width:36vh;height:36vh;min-width:16px;min-height:16px;padding:0;cursor:pointer;
+  display:grid;place-items:center;font:inherit;font-size:15vh;line-height:1}
+.play{background:var(--accent);color:var(--accent-ink)}
+.close{background:rgba(var(--bgc),.7);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="pill" id="pill">
+  <img id="fox" alt="">
+  <div class="time" id="time">--:--</div>
+  <div class="ctl">
+    <button class="play" id="play" type="button" aria-label="Start">&#9654;</button>
+    <button class="close" id="close" type="button" aria-label="Hide mini timer">&#10005;</button>
+  </div>
+</div>
+<script src="fox.js"></script>
+<script>
+const fox = document.getElementById("fox"), time = document.getElementById("time"), play = document.getElementById("play");
+let last = null;
+window.pawAPI.onState(s => {
+  last = s;
+  document.documentElement.classList.toggle("light", s.theme === "light");
+  if (time.textContent !== s.t) time.textContent = s.t;
+  play.innerHTML = s.running ? "&#10074;&#10074;" : "&#9654;";
+  play.setAttribute("aria-label", s.running ? "Pause" : "Start");
+  const set = FOX_SETS[s.theme] || FOX_SETS.dark;
+  const src = set[s.mode === "focus" ? "focus" : "nap"][s.frame] || set.focus[0];
+  if (fox.getAttribute("src") !== src) fox.setAttribute("src", src);
+});
+window.pawAPI.onOpacity(a => document.documentElement.style.setProperty("--alpha", String(a)));
+play.addEventListener("click", () => window.pawAPI.miniCommand("toggle"));
+document.getElementById("close").addEventListener("click", () => window.pawAPI.toggleMini());
+</script>
+</body>
+</html>

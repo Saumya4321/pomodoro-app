@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pawmodoro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link id="fontlink" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap">
+<style id="css">
+:root{
+  --bg:#F4F0FA;--surface:#FFFFFF;--ink:#2E2640;--muted:#6E6585;--line:#E3DCEE;--soft:#F1ECF8;
+  --accent:#6C4AB6;--accent-ink:#FFFFFF;
+  --h0:#EAE4F3;--h1:#D4C4EE;--h2:#AE91E0;--h3:#845FCB;--h4:#563A9A;
+  --display:"Fredoka",ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"Nunito",ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17131F;--surface:#221C2E;--ink:#EEE8F7;--muted:#A69DBA;--line:#352C46;--soft:#2A2338;
+    --accent:#A98BEA;--accent-ink:#1A1426;
+    --h0:#2A2338;--h1:#43356A;--h2:#6247A0;--h3:#8B6BD6;--h4:#C2A9F5;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17131F;--surface:#221C2E;--ink:#EEE8F7;--muted:#A69DBA;--line:#352C46;--soft:#2A2338;
+  --accent:#A98BEA;--accent-ink:#1A1426;
+  --h0:#2A2338;--h1:#43356A;--h2:#6247A0;--h3:#8B6BD6;--h4:#C2A9F5;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+.wrap{max-width:780px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.brand{font-family:var(--display);font-weight:600;font-size:1.5rem;letter-spacing:-.01em;margin:0}
+.sync{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.on i{background:#4CAF7A}
+
+.timer{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:20px 20px 20px;text-align:center}
+.modes{display:inline-flex;background:var(--soft);border-radius:999px;padding:4px;gap:2px;flex-wrap:wrap;justify-content:center}
+.modes button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.9rem;padding:8px 14px;border-radius:999px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(46,38,64,.14)}
+.cat{width:250px;max-width:70%;margin:12px auto 0}
+.cat svg{width:100%;height:auto;display:block;overflow:visible}
+.cat img.fox{display:block;width:220px;max-width:100%;height:auto;margin:0 auto}
+.pip .cat img.fox{width:62px}
+.time{font-family:var(--display);font-weight:500;font-size:clamp(4rem,15vw,6.5rem);line-height:1;font-variant-numeric:tabular-nums;margin:8px 0 6px;letter-spacing:-.02em}
+.status{color:var(--muted);font-weight:600;min-height:1.5em;margin:0}
+.paws{display:flex;justify-content:center;gap:8px;margin:12px 0 18px}
+.paws span{width:10px;height:10px;border-radius:50%;background:var(--h0);border:1px solid var(--line)}
+.paws span.done{background:var(--accent);border-color:var(--accent)}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;border-radius:999px;padding:12px 22px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);min-width:136px}
+.btn:focus-visible,.modes button:focus-visible,summary:focus-visible,input:focus-visible,.pbtn:focus-visible{outline:3px solid var(--h2);outline-offset:2px}
+.note{font-size:.88rem;color:var(--muted);margin:12px 0 0;min-height:1.3em}
+
+.statbar{display:grid;grid-template-columns:repeat(4,1fr);margin-top:14px;background:var(--soft);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.statbar > div{padding:12px 8px;text-align:center}
+.statbar > div + div{border-left:1px solid var(--line)}
+.statbar .k{display:block;font-size:.78rem;color:var(--muted);font-weight:600}
+.statbar .v{font-family:var(--display);font-weight:600;font-size:1.2rem;line-height:1.3}
+.goalbar{height:5px;border-radius:3px;background:var(--line);margin:6px auto 0;width:72%;overflow:hidden}
+.goalbar i{display:block;height:100%;background:var(--accent);border-radius:3px;width:0;transition:width .4s ease}
+@media (max-width:540px){
+  .statbar{grid-template-columns:1fr 1fr}
+  .statbar > div + div{border-left:0}
+  .statbar > div:nth-child(even){border-left:1px solid var(--line)}
+  .statbar > div:nth-child(n+3){border-top:1px solid var(--line)}
+}
+
+.year{margin-top:28px}
+.yearhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
+.year h2{font-family:var(--display);font-weight:600;font-size:1.25rem;margin:0}
+.stats{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+.stats b{color:var(--ink);font-weight:700}
+.heatwrap{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;position:relative}
+.heatscroll{padding:2px}
+.heat{display:grid;grid-template-columns:30px;grid-auto-columns:12px;grid-template-rows:auto repeat(7,12px);gap:3px;width:max-content}
+.heat .m{grid-row:1;width:0;overflow:visible;white-space:nowrap;font-size:.72rem;color:var(--muted);line-height:1.4}
+.heat .dl{grid-column:1;font-size:.68rem;color:var(--muted);align-self:center;line-height:1}
+.cell{width:12px;height:12px;border-radius:3px;background:var(--h0);display:inline-block}
+.heat .cell{cursor:default}
+.heat .cell:hover{box-shadow:inset 0 0 0 2px var(--muted)}
+.tip{position:absolute;z-index:5;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:10px;padding:8px 11px;font-size:.8rem;line-height:1.4;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px));opacity:0;transition:opacity .12s}
+.tip.show{opacity:1}
+.tip b{display:block;font-weight:700}
+.tip::after{content:"";position:absolute;left:calc(50% + var(--ax, 0px));bottom:-5px;width:10px;height:10px;background:var(--ink);transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.cell[data-l="1"]{background:var(--h1)}
+.cell[data-l="2"]{background:var(--h2)}
+.cell[data-l="3"]{background:var(--h3)}
+.cell[data-l="4"]{background:var(--h4)}
+.cell.today{box-shadow:inset 0 0 0 2px var(--ink)}
+.legend{display:flex;align-items:center;gap:6px 12px;justify-content:space-between;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:12px}
+.legend .scale{display:flex;align-items:center;gap:4px}
+details{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 18px}
+summary{cursor:pointer;font-weight:700}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);font-weight:600}
+input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+
+.syncrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.syncrow b{display:block;font-size:.9rem}
+.syncrow span{font-size:.82rem;color:var(--muted);word-break:break-all}
+input[type=range]{width:100%;accent-color:var(--accent)}
+/* cat motion */
+.cat .tail{transform-box:view-box;transform-origin:34px 130px}
+.app.running .cat .tail{animation:swish 1.8s ease-in-out infinite}
+@keyframes swish{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-9deg)}}
+.cat .paw{transform-box:view-box}
+.app.running .cat .pawFar{animation:typeL .6s step-end infinite}
+.app.running .cat .pawNear{animation:typeR .6s step-end infinite}
+@keyframes typeL{0%{transform:translateY(-7px)}33.33%{transform:translateY(1px)}66.66%{transform:translateY(0)}}
+@keyframes typeR{0%{transform:translateY(0)}33.33%{transform:translateY(1px)}66.66%{transform:translateY(-7px)}}
+.cat .breathe{transform-box:view-box;transform-origin:110px 150px}
+.app.sleeping .cat .breathe{animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.012,1.03)}}
+.cat .zz text{opacity:0}
+.app.sleeping .cat .zz text{animation:zz 3s ease-in-out infinite}
+.app.sleeping .cat .zz text:nth-child(2){animation-delay:.6s}
+.app.sleeping .cat .zz text:nth-child(3){animation-delay:1.2s}
+@keyframes zz{0%{opacity:0;transform:translate(0,4px)}35%{opacity:1}100%{opacity:0;transform:translate(8px,-12px)}}
+@media (prefers-reduced-motion:reduce){
+  .app.running .cat .tail,.app.running .cat .pawFar,.app.running .cat .pawNear,.app.sleeping .cat .breathe,.app.sleeping .cat .zz text{animation:none}
+  .app.sleeping .cat .zz text{opacity:1}
+}
+
+/* floating mini window */
+.pip{display:flex;align-items:center;justify-content:center;gap:6px;min-height:100vh;padding:2px 6px}
+.pip .cat{width:64px;max-width:none;margin:0;flex:none}
+.pip .pright{display:flex;align-items:center;gap:6px}
+.ptime{font-family:var(--display);font-weight:500;font-size:1.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.pbtn{font:inherit;font-weight:700;font-size:.7rem;line-height:1;width:24px;height:24px;border-radius:50%;padding:0;border:0;background:var(--accent);color:var(--accent-ink);cursor:pointer;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<main class="wrap app" id="app">
+  <header>
+    <h1 class="brand">Pawmodoro</h1>
+    <div class="sync" id="sync"><i></i><span>Saved on this device</span></div>
+  </header>
+
+  <section class="timer" aria-label="Timer">
+    <div class="modes" role="group" aria-label="Timer mode">
+      <button type="button" data-mode="focus" aria-pressed="true">Focus</button>
+      <button type="button" data-mode="short" aria-pressed="false">Short break</button>
+      <button type="button" data-mode="long" aria-pressed="false">Long break</button>
+    </div>
+    <div class="cat" id="cat" aria-hidden="true"></div>
+    <div class="time" id="time" role="timer" aria-live="off">25:00</div>
+    <p class="status" id="status">Ready when you are</p>
+    <div class="paws" id="paws" aria-label="Focus sessions until long break"></div>
+    <div class="actions">
+      <button type="button" class="btn primary" id="toggle">Start</button>
+      <button type="button" class="btn" id="reset">Reset</button>
+      <button type="button" class="btn" id="float">Mini timer</button>
+    </div>
+    <p class="note" id="note" aria-live="polite"></p>
+    <div class="statbar" aria-label="Today">
+      <div><span class="k">Focus time</span><span class="v" id="st-time">0m</span></div>
+      <div><span class="k">Sessions</span><span class="v" id="st-sessions">0</span></div>
+      <div><span class="k">Streak</span><span class="v" id="st-streak">0</span></div>
+      <div><span class="k">Daily goal</span><span class="v" id="st-goal">0 / 5</span><div class="goalbar"><i id="st-goalbar"></i></div></div>
+    </div>
+  </section>
+
+  <section class="year" aria-label="Focus history">
+    <div class="yearhead">
+      <h2>Your year of focus</h2>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="heatwrap">
+      <div class="heatscroll" id="heatscroll"><div class="heat" id="heat" role="img" aria-label="Focus heatmap"></div></div>
+      <div class="tip" id="tip" role="tooltip"></div>
+      <div class="legend">
+        <span id="synchint">Open this same link on your other computer to share one heatmap.</span>
+        <span class="scale">Less <i class="cell"></i><i class="cell" data-l="1"></i><i class="cell" data-l="2"></i><i class="cell" data-l="3"></i><i class="cell" data-l="4"></i> More</span>
+      </div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Settings</summary>
+    <div class="fields">
+      <label>Focus (minutes)<input type="number" id="s-focus" min="1" max="180"></label>
+      <label>Short break (minutes)<input type="number" id="s-short" min="1" max="60"></label>
+      <label>Long break (minutes)<input type="number" id="s-long" min="1" max="90"></label>
+      <label>Long break after<input type="number" id="s-every" min="2" max="8"></label>
+      <label>Daily session goal<input type="number" id="s-goal" min="1" max="20"></label>
+      <label>Mini timer size<input type="range" id="s-size" min="36" max="140" step="1"></label>
+      <label>Mini timer background<input type="range" id="s-alpha" min="0" max="100" step="1"></label>
+    </div>
+    <div class="syncrow">
+      <div><b>Sync folder</b><span id="syncpath">No sync folder chosen</span></div>
+      <button type="button" class="btn" id="pickfolder">Choose folder</button>
+    </div>
+  </details>
+</main>
+
+<script src="fox.js"></script>
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const DEF = {focus:25, short:5, long:15, every:4, goal:5};
+const LIMITS = {focus:[1,180], short:[1,60], long:[1,90], every:[2,8], goal:[1,20]};
+const MODES = {focus:"Focus", short:"Short break", long:"Long break"};
+const LS = "pawmodoro:v1";
+
+let settings = {...DEF};
+let days = {};               // "YYYY-MM-DD" -> {m: minutes, s: sessions}
+let T = {mode:"focus", running:false, endAt:0, remaining:DEF.focus*60000, count:0};
+
+/* ---------- helpers ---------- */
+const pad = n => String(n).padStart(2,"0");
+const keyOf = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const dur = m => settings[m]*60000;
+function fmt(ms){ const s=Math.ceil(ms/1000); return pad(Math.floor(s/60))+":"+pad(s%60); }
+function fmtMin(m){ if (m < 60) return m + "m"; const h = Math.floor(m/60), r = m % 60; return r ? h + "h " + r + "m" : h + "h"; }
+function note(msg){ $("note").textContent = msg || ""; }
+function clampSettings(s){
+  const out = {...DEF};
+  for (const k of Object.keys(DEF)){
+    const v = Math.round(Number(s && s[k]));
+    out[k] = Number.isFinite(v) && s && s[k] !== undefined && s[k] !== "" ? Math.min(LIMITS[k][1], Math.max(LIMITS[k][0], v)) : DEF[k];
+  }
+  return out;
+}
+
+/* ---------- local storage ---------- */
+function loadLocal(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS) || "null");
+    if (!s) return;
+    if (s.days && typeof s.days === "object") myDays = s.days;
+    settings = clampSettings(s.settings);
+    if (s.timer && MODES[s.timer.mode]) T = Object.assign(T, s.timer);
+  }catch(e){}
+}
+function saveLocal(){
+  try{ localStorage.setItem(LS, JSON.stringify({days: myDays, settings, timer:T})); }catch(e){}
+}
+
+/* ---------- folder sync (desktop app) ---------- */
+// Each computer writes its own file (pawmodoro-<device>.json) into a folder you choose,
+// e.g. inside OneDrive, Google Drive, Dropbox or iCloud. The heatmap adds them all up,
+// so two computers never overwrite each other.
+let myDays = {}, otherDays = {}, deviceId = null, syncFolder = null;
+function combine(){
+  const out = {};
+  [myDays, ...Object.values(otherDays)].forEach(src => Object.keys(src || {}).forEach(k => {
+    const v = src[k] || {}, o = out[k] || {m:0, s:0};
+    out[k] = {m: o.m + (Number(v.m) || 0), s: o.s + (Number(v.s) || 0)};
+  }));
+  days = out;
+}
+function setSync(on){
+  const el = $("sync");
+  el.classList.toggle("on", on);
+  el.querySelector("span").textContent = on ? "Synced through your folder" : "Saved on this computer";
+  $("synchint").textContent = on
+    ? "Your other computer adds to this heatmap when it uses the same sync folder."
+    : "Pick a sync folder in Settings to combine heatmaps across computers.";
+  $("syncpath").textContent = syncFolder ? syncFolder : "No sync folder chosen";
+}
+async function pushMine(){
+  if (!window.pawAPI || !syncFolder) return;
+  try{ await window.pawAPI.writeMine({deviceId, days: myDays, updated: Date.now()}); }
+  catch(e){ note("Couldn't write to your sync folder. Your sessions are still saved on this computer."); }
+}
+async function pullOthers(){
+  if (!window.pawAPI) return;
+  try{
+    const res = await window.pawAPI.readAll();
+    syncFolder = (res && res.folder) || null;
+    otherDays = {};
+    if (res && res.files) res.files.forEach(f => { if (f && f.deviceId && f.deviceId !== deviceId && f.days) otherDays[f.deviceId] = f.days; });
+    combine(); setSync(!!syncFolder); renderYear();
+  }catch(e){ setSync(false); }
+}
+async function initSync(){
+  if (!window.pawAPI) return setSync(false);
+  const info = await window.pawAPI.info();
+  deviceId = info.deviceId; syncFolder = info.folder;
+  $("s-alpha").value = Math.round((info.miniAlpha ?? 0.55) * 100);
+  $("s-size").value = info.miniHeight ?? 60;
+  await pushMine(); await pullOthers();
+  setInterval(pullOthers, 30000);
+  window.addEventListener("focus", pullOthers);
+}
+
+/* ---------- settings ---------- */
+function fillSettings(){ for (const k of Object.keys(DEF)) $("s-"+k).value = settings[k]; }
+function applySettings(next, persist){
+  const changed = Object.keys(DEF).some(k => next[k] !== settings[k]);
+  if (!changed) return;
+  const fullBefore = dur(T.mode);
+  settings = next;
+  if (!T.running && T.remaining === fullBefore) T.remaining = dur(T.mode);
+  fillSettings(); saveLocal(); render(); renderYear();
+}
+Object.keys(DEF).forEach(k => {
+  $("s-"+k).addEventListener("change", () => {
+    applySettings(clampSettings({...settings, [k]: $("s-"+k).value}), true);
+    fillSettings();
+  });
+});
+
+/* ---------- sound ---------- */
+let actx = null;
+function ensureAudio(){
+  try{ if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); }catch(e){}
+}
+function chime(){
+  if (!actx) return;
+  try{
+    const now = actx.currentTime;
+    [659.25, 880, 1046.5].forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, now + i*0.18);
+      g.gain.exponentialRampToValueAtTime(0.25, now + i*0.18 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + i*0.18 + 0.9);
+      o.connect(g).connect(actx.destination);
+      o.start(now + i*0.18); o.stop(now + i*0.18 + 1);
+    });
+  }catch(e){}
+}
+
+/* ---------- fox frames (see fox.js) ---------- */
+function foxFrame(){
+  if (!T.running) return 0;
+  return T.mode === "focus" ? Math.floor(Date.now()/500) % 2 : Math.floor(Date.now()/1300) % 2;
+}
+function foxSrc(){ return FOX_SETS[themeName()][T.mode === "focus" ? "focus" : "nap"][foxFrame()]; }
+function catKey(){ return "fox"; }
+function catMarkup(){ return '<img class="fox" alt="" src="' + foxSrc() + '">'; }
+function syncFox(container){
+  const im = container.querySelector("img.fox"); if (!im) return;
+  const src = foxSrc(); if (im.getAttribute("src") !== src) im.setAttribute("src", src);
+}
+
+/* ---------- timer ---------- */
+function creditFocus(min){
+  const k = keyOf(new Date());
+  const cur = myDays[k] || {m:0, s:0};
+  myDays[k] = {m:cur.m + min, s:cur.s + 1};
+  combine(); saveLocal(); renderYear(); pushMine();
+}
+function complete(){
+  T.running = false;
+  if (T.mode === "focus"){
+    creditFocus(settings.focus);
+    T.count++;
+    T.mode = (T.count % settings.every === 0) ? "long" : "short";
+    const s = days[keyOf(new Date())].s;
+    note(s === settings.goal ? "Daily goal reached. The fox is proud of you." : "Nice work. Time for a nap.");
+  } else {
+    T.mode = "focus";
+    note("Break's over. Ready for another round?");
+  }
+  T.remaining = dur(T.mode);
+  chime(); saveLocal(); render();
+  try{ new Notification(T.mode === "focus" ? "Break's over" : "Focus session done", {body: T.mode === "focus" ? "Ready for another round?" : "Time for a nap.", silent: true}); }catch(e){}
+}
+function toggle(){
+  ensureAudio();
+  if (T.running){ T.remaining = Math.max(0, T.endAt - Date.now()); T.running = false; }
+  else { T.endAt = Date.now() + T.remaining; T.running = true; note(""); }
+  saveLocal(); render();
+}
+function reset(){ T.running = false; T.remaining = dur(T.mode); saveLocal(); render(); }
+function setMode(m){ T.mode = m; T.running = false; T.remaining = dur(m); note(""); saveLocal(); render(); }
+
+/* ---------- render ---------- */
+let lastKey = null;
+function setText(el, t){ if (el.textContent !== t) el.textContent = t; }
+function statusText(){
+  if (T.running) return T.mode === "focus" ? "Focusing" : "Nap in progress";
+  if (T.remaining < dur(T.mode)) return "Paused";
+  return T.mode === "focus" ? "Ready when you are" : MODES[T.mode] + " is up next";
+}
+function render(){
+  const key = catKey();
+  const running = T.running && T.mode === "focus";
+  const sleeping = T.mode !== "focus";
+  const app = $("app");
+  app.classList.toggle("running", running);
+  app.classList.toggle("sleeping", sleeping);
+  if (key !== lastKey){ $("cat").innerHTML = catMarkup(key); lastKey = key; }
+  syncFox($("cat"));
+  const t = fmt(T.remaining);
+  setText($("time"), t);
+  setText($("status"), statusText());
+  setText($("toggle"), T.running ? "Pause" : (T.remaining < dur(T.mode) ? "Resume" : "Start"));
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === T.mode)));
+  const paws = $("paws"), done = T.count % settings.every;
+  if (paws.children.length !== settings.every || paws.dataset.done !== String(done)){
+    paws.innerHTML = "";
+    for (let i = 0; i < settings.every; i++){ const s = document.createElement("span"); if (i < done) s.className = "done"; paws.appendChild(s); }
+    paws.dataset.done = String(done);
+  }
+  const title = T.running ? t + " " + MODES[T.mode] : "Pawmodoro";
+  if (document.title !== title) document.title = title;
+  setText($("float"), miniOpen ? "Hide mini timer" : "Mini timer");
+  pushMini(t);
+}
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function level(m){ return m <= 0 ? 0 : m <= 25 ? 1 : m <= 60 ? 2 : m <= 120 ? 3 : 4; }
+function computeStats(today){
+  const tk = keyOf(today), td = days[tk] || {m:0, s:0};
+  let streak = 0; const cur = new Date(today);
+  if (!(td.m > 0)) cur.setDate(cur.getDate()-1);
+  while (true){ const v = days[keyOf(cur)]; if (v && v.m > 0){ streak++; cur.setDate(cur.getDate()-1); } else break; }
+  const yr = String(today.getFullYear());
+  let yearSessions = 0, yearMin = 0;
+  Object.keys(days).forEach(k => { if (k.indexOf(yr) === 0){ yearSessions += days[k].s || 0; yearMin += days[k].m || 0; } });
+  return {todayMin: td.m, todaySessions: td.s, streak, yearSessions, yearMin};
+}
+function renderYear(){
+  const today = new Date(); today.setHours(12,0,0,0);
+  const avail = $("heatscroll").clientWidth || 700;
+  shownWeeks = Math.max(8, Math.min(53, Math.floor((avail - 4 - 30) / 15)));
+  const start = new Date(today); start.setDate(today.getDate() - ((shownWeeks-1)*7 + today.getDay()));
+  const heat = $("heat"), frag = document.createDocumentFragment();
+  [["Mon",3],["Wed",5],["Fri",7]].forEach(([t,r]) => { const s = document.createElement("span"); s.className = "dl"; s.textContent = t; s.style.gridRow = String(r); frag.appendChild(s); });
+  const tk = keyOf(today);
+  let i = 0, lastMonth = -1;
+  for (const d = new Date(start); d <= today; d.setDate(d.getDate()+1), i++){
+    const k = keyOf(d), v = days[k], m = v ? v.m : 0, colIdx = Math.floor(i/7) + 2;
+    const c = document.createElement("div");
+    c.className = "cell" + (k === tk ? " today" : "");
+    c.style.gridColumn = String(colIdx); c.style.gridRow = String(d.getDay() + 2);
+    const l = level(m); if (l) c.dataset.l = String(l);
+    c.dataset.k = k;
+    frag.appendChild(c);
+    if (d.getDay() === 0 && d.getMonth() !== lastMonth){
+      if (d.getDate() <= 7 && colIdx <= shownWeeks - 1){
+        const s = document.createElement("span");
+        s.className = "m"; s.textContent = MONTHS[d.getMonth()]; s.style.gridColumn = String(colIdx);
+        frag.appendChild(s);
+      }
+      lastMonth = d.getMonth();
+    }
+  }
+  heat.innerHTML = ""; heat.appendChild(frag);
+
+  const st = computeStats(today);
+  setText($("st-time"), fmtMin(st.todayMin));
+  setText($("st-sessions"), String(st.todaySessions));
+  setText($("st-streak"), st.streak > 0 ? st.streak + " 🔥" : "0");
+  setText($("st-goal"), st.todaySessions + " / " + settings.goal);
+  $("st-goalbar").style.width = Math.min(100, Math.round(st.todaySessions / settings.goal * 100)) + "%";
+  const stats = $("stats"); stats.innerHTML = "";
+  [["This year", fmtMin(st.yearMin)], ["Sessions", String(st.yearSessions)]].forEach(([a,b]) => {
+    const s = document.createElement("span"); s.append(a + " "); const bb = document.createElement("b"); bb.textContent = b; s.appendChild(bb); stats.appendChild(s);
+  });
+  heat.setAttribute("aria-label", "Focus heatmap for the past year. " + fmtMin(st.yearMin) + " this year, current streak " + st.streak + " days.");
+}
+
+/* ---------- heatmap tooltip + resize ---------- */
+let shownWeeks = 53;
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function showTip(cell){
+  const k = cell.dataset.k; if (!k) return;
+  const [y, mo, da] = k.split("-").map(Number);
+  const dt = new Date(y, mo-1, da);
+  const v = days[k];
+  const tip = $("tip"); tip.innerHTML = "";
+  const b = document.createElement("b");
+  b.textContent = DOW[dt.getDay()] + ", " + MONTHS[dt.getMonth()] + " " + da + ", " + y;
+  tip.appendChild(b);
+  const lines = v && v.m > 0
+    ? [fmtMin(v.m) + " focused", v.s + (v.s === 1 ? " interval" : " intervals")]
+    : ["No focus this day"];
+  lines.forEach(t => { const s = document.createElement("span"); s.style.display = "block"; s.textContent = t; tip.appendChild(s); });
+  const wrap = tip.parentElement.getBoundingClientRect(), r = cell.getBoundingClientRect();
+  const target = r.left - wrap.left + r.width/2;
+  let x = target;
+  tip.style.setProperty("--ax", "0px");
+  tip.style.left = x + "px"; tip.style.top = (r.top - wrap.top) + "px";
+  tip.classList.add("show");
+  // keep the bubble inside the card, but leave its arrow on the hovered day
+  const tw = tip.offsetWidth, half = tw / 2, minX = half + 4, maxX = wrap.width - half - 4;
+  x = Math.min(maxX, Math.max(minX, target));
+  const ax = Math.max(-half + 10, Math.min(half - 10, target - x));
+  tip.style.left = x + "px";
+  tip.style.setProperty("--ax", ax + "px");
+}
+function hideTip(){ $("tip").classList.remove("show"); }
+$("heat").addEventListener("mouseover", e => { const c = e.target.closest(".cell"); if (c) showTip(c); });
+$("heat").addEventListener("mouseleave", hideTip);
+$("heat").addEventListener("click", e => { const c = e.target.closest(".cell"); if (c) showTip(c); });
+document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest("#heat")) hideTip(); });
+if (window.ResizeObserver){
+  let rt = 0;
+  new ResizeObserver(() => {
+    clearTimeout(rt);
+    rt = setTimeout(() => {
+      const w = Math.max(8, Math.min(53, Math.floor((($("heatscroll").clientWidth || 700) - 4 - 30) / 15)));
+      if (w !== shownWeeks) renderYear();
+    }, 80);
+  }).observe($("heatscroll"));
+}
+
+/* ---------- mini timer window (desktop app) ---------- */
+let miniOpen = false;
+function float(){ if (window.pawAPI) window.pawAPI.toggleMini(); }
+function pushMini(t){
+  if (!window.pawAPI || !miniOpen) return;
+  window.pawAPI.sendState({t, running: T.running, mode: T.mode, frame: foxFrame(), theme: themeName()});
+}
+if (window.pawAPI){
+  window.pawAPI.onMiniCommand(c => { if (c === "toggle") toggle(); });
+  window.pawAPI.onMiniVisible(v => { miniOpen = v; render(); });
+  $("pickfolder").addEventListener("click", async () => {
+    const f = await window.pawAPI.chooseFolder();
+    if (f){ syncFolder = f; await pushMine(); await pullOthers(); }
+  });
+  $("s-alpha").addEventListener("input", () => window.pawAPI.setMiniAlpha(Number($("s-alpha").value) / 100));
+  $("s-size").addEventListener("input", () => window.pawAPI.setMiniSize(Number($("s-size").value)));
+}
+
+/* ---------- wiring ---------- */
+$("toggle").addEventListener("click", toggle);
+$("reset").addEventListener("click", reset);
+$("float").addEventListener("click", float);
+document.querySelectorAll(".modes button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+document.addEventListener("keydown", e => {
+  if (e.code !== "Space" || e.repeat) return;
+  const tag = (e.target && e.target.tagName) || "";
+  if (["INPUT","BUTTON","SUMMARY","TEXTAREA","SELECT"].includes(tag)) return;
+  e.preventDefault(); toggle();
+});
+
+loadLocal();
+if (T.running && T.endAt <= Date.now()){ T.remaining = 0; complete(); }
+fillSettings();
+setSync(false);
+render(); renderYear();
+setInterval(() => {
+  if (T.running){ T.remaining = Math.max(0, T.endAt - Date.now()); if (T.remaining <= 0) complete(); }
+  render();
+}, 200);
+let lastDay = keyOf(new Date());
+setInterval(() => { const k = keyOf(new Date()); if (k !== lastDay){ lastDay = k; renderYear(); } }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+combine(); renderYear(); initSync();
+})();
+</script>
+</body>
+</html>
