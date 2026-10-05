@@ -1,0 +1,41 @@
+{
+  "name": "pawmodoro",
+  "productName": "Pawmodoro",
+  "version": "1.0.0",
+  "description": "A cozy fox pomodoro timer with a floating mini timer and a focus heatmap",
+  "main": "main.js",
+  "author": "Saumya",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:win": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.saumya.pawmodoro",
+    "productName": "Pawmodoro",
+    "files": ["main.js", "preload.js", "renderer/**/*"],
+    "directories": { "buildResources": "build", "output": "dist" },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["universal"] }],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
